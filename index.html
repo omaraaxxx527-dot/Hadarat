@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0e1e3a"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><title>حضارات: القرية</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap">
+<style>
+:root{--bg:#e8edf0;--card:#f7f9fa;--ink:#16243a;--muted:#5b6b82;--gold:#9a6f00;--teal:#0b7a86;--bad:#b3392b;--line:#c9d3dc;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1e3a;--card:#152a4d;--ink:#f1e6c8;--muted:#a9b6cf;--gold:#e0b341;--teal:#3fb3bd;--bad:#ee7a68;--line:#27406b;--on:#0e1e3a}}
+:root[data-theme="dark"]{--bg:#0e1e3a;--card:#152a4d;--ink:#f1e6c8;--muted:#a9b6cf;--gold:#e0b341;--teal:#3fb3bd;--bad:#ee7a68;--line:#27406b;--on:#0e1e3a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+h1,h2{font-family:Amiri,"Noto Naskh Arabic",serif;margin:0;font-weight:700;color:var(--gold)}
+#app{max-width:520px;margin:0 auto;padding:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px}
+button{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer;min-height:42px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+button.main{background:var(--gold);color:var(--on);border-color:var(--gold);font-weight:700}
+button:disabled{opacity:.45;cursor:default}
+.hide{display:none!important}
+svg{flex:none}
+.pk{display:flex;gap:10px;text-align:right;align-items:center;width:100%;margin-bottom:8px}
+small,.lbl{color:var(--muted);font-size:13px}
+.top{display:flex;justify-content:space-between;align-items:baseline}
+.top h2{font-size:24px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px;text-align:center}
+.stat b{display:block;font-size:18px}.stat span{font-size:12px;color:var(--muted)}
+.bar{height:7px;background:var(--line);border-radius:6px;overflow:hidden;margin:3px 0 8px}
+.bar i{display:block;height:100%;background:var(--teal)}
+.nar{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.bub{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 10px;font-size:14px}
+#map{border-radius:14px;border:1px solid var(--line);margin-bottom:10px;touch-action:manipulation}
+.rw{display:flex;gap:6px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0;padding-bottom:6px;border-bottom:1px dashed var(--line)}
+.rw .g{display:flex;gap:4px;align-items:center}
+.pls{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}
+.pl{text-align:center;border:1px dashed var(--line);border-radius:8px;padding:6px 2px;font-size:12px;color:var(--muted)}
+.pl.rd{background:var(--teal);color:var(--on);border-style:solid}
+input[type=number],select,textarea{font:inherit;padding:5px 6px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+input[type=number]{width:64px}textarea{width:100%;margin:8px 0}
+#vis{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.vs{text-align:center;width:72px;font-size:11px}
+#log p{margin:2px 0;font-size:13px;color:var(--muted)}#log p:first-child{color:var(--ink)}
+.ov{position:fixed;inset:0;background:rgba(5,10,20,.82);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9}
+.ov .card{max-width:360px;width:100%;text-align:center}
+</style>
+</head>
+<body>
+<div id="app">
+ <div id="pick"><h1 style="font-size:38px;text-align:center">حضارات</h1>
+  <div class="nar"><div id="pn"></div><div class="bub">اختر حضارتك، ثم تجوّل في القرية: اشترِ بذوراً، ازرع، اصنع، بِع بسعرك، واكسب العرش.</div></div>
+  <div id="cards"></div></div>
+ <div id="game" class="hide">
+  <div class="top"><h2 id="rank"></h2><span class="lbl" id="clock"></span></div>
+  <div class="stats" id="stats"></div>
+  <div class="bar"><i id="xp"></i></div>
+  <div class="nar"><div id="nv"></div><div class="bub" id="nt"></div></div>
+  <svg id="map" viewBox="0 0 360 280" width="100%" role="img" aria-label="خريطة القرية" onclick="mapTap(event)"></svg>
+  <div class="card hide" id="panel"></div>
+  <button style="width:100%;margin-bottom:8px" onclick="sleep()">نم (مجاناً في البيت، 5 ذهب خارجه)</button>
+  <button id="adb" style="width:100%" onclick="ad()"></button>
+  <p class="lbl" style="text-align:center">الإعلان اختياري دائماً ولا يظهر إلا لو ضغطته.</p>
+  <div class="card" id="log"></div>
+ </div>
+</div>
+<div id="ov" class="ov hide"><div class="card" id="ovc"></div></div>
+
+<script>
+var $=function(i){return document.getElementById(i)},S,P={x:180,y:176,dir:1,w:0},N=[],KEYS=["egypt","iraq","greece","rome","phoenicia"],last=0,rafOn=false;
+var CIV={
+egypt:{n:"مصر",d:"أرض النيل الخصبة: محصول أكبر بـ 25%. احفر قنوات ري تسرّع النمو.",hat:"nemes",sp:"قناة الري",ranks:["فلاح","مزارع ماهر","مشرف مخازن","حاكم مدينة","الفرعون"]},
+iraq:{n:"العراق",d:"أرض الطين والصناعة: كل جرّة تعطيك اثنتين. ابنِ ثروتك بالفخار والتجارة.",hat:"tiara",sp:"المعبد",ranks:["عامل طين","صانع ماهر","تاجر قوافل","حاكم مدينة","ملك بابل"]},
+greece:{n:"اليونان",d:"الذكاء والفلسفة: اكتب حكمتك ويقيّمها حكيم، ويأتيك التلاميذ بالذهب.",hat:"laurel",sp:"الأكاديمية",ranks:["متعلّم","فيلسوف شاب","معلّم","حكيم المدينة","ملك الحكماء"]},
+rome:{n:"روما",d:"القوة العسكرية: تدرّب، فكّر في الحرب، وتبارز في الحلبة.",hat:"helmet",sp:"الحلبة",ranks:["مجنّد","جندي","قائد فرقة","قائد جيش","ملك روما"]},
+phoenicia:{n:"فينيقيا",d:"تاجر بشعر أحمر: قوافلك تربح أكثر، وتبحر إلى موانئ بعيدة.",hat:"hair",sp:"الميناء",ranks:["بحّار","تاجر صغير","قبطان","أمير التجار","ملك صور"]}};
+var CROPS=[{id:"wheat",n:"قمح",e:"🌾",seed:2,days:6,y:8,p:5},{id:"cuc",n:"خيار",e:"🥒",seed:3,days:4,y:6,p:7},{id:"onion",n:"بصل",e:"🧅",seed:3,days:5,y:7,p:6},{id:"grape",n:"عنب",e:"🍇",seed:8,days:8,y:8,p:12},{id:"fig",n:"تين",e:"🍐",seed:10,days:9,y:8,p:15},{id:"pom",n:"رمان",e:"🍎",seed:12,days:10,y:7,p:19}];
+var POTS=[{id:"jar",n:"جرّة",e:"🏺",clay:1,min:90,p:12},{id:"vase",n:"إناء مزخرف",e:"⚱️",clay:3,min:180,p:36}];
+var IT={};CROPS.concat(POTS).forEach(function(x){IT[x.id]=x});var ITEMS=CROPS.concat(POTS);
+var LV=[0,25,70,140,250],SK=["#fff","#f3d7b0","#d9b08c","#cfe8ff"];
+var CITIES=[{n:"قرية الشمال",m:1.3,r:.08},{n:"مدينة التجار",m:1.5,r:.12},{n:"العاصمة البعيدة",m:1.8,r:.2}];
+var WAR=["جيش عدوك ضعف جيشك ويقف على تلّ. ماذا تفعل؟","عدوك يحاصر مدينتك وطعامك يكفي أسبوعاً. ماذا تفعل؟","عدوك يقترب من نهر عريض. كيف تستغل ذلك؟"];
+var BUILD=[["granary","مخزن غلال",40,"+3 قمح كل يوم"],["temple","معبد",60,"+1 سمعة كل يوم"],["port","ميناء",80,"+4 ذهب كل يوم"],["camp","ثكنة تدريب",100,"+2 خبرة كل يوم"]];
+var LOC={home:{x:180,y:150,l:"البيت"},farm:{x:62,y:85,l:"المزرعة"},seeds:{x:180,y:66,l:"متجر البذور"},market:{x:298,y:85,l:"السوق"},pot:{x:62,y:212,l:"ورشة الفخار"},stable:{x:180,y:226,l:"الإسطبل"},spec:{x:298,y:212,l:""}};
+var HAT={};
+
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function char(o){var h=o.hat,m=o.mood||"smile",c=o.c||"#fff",z=o.s||48;
+var hat=h=="cap"?'<path d="M10 20 32 10 54 20 32 30Z" fill="#222"/><path d="M20 24v8q12 6 24 0v-8" fill="#222"/><path d="M54 20v12" stroke="#e0b341" stroke-width="2"/>'
+:h=="crown"?'<path d="M16 24 20 8 28 18 32 6 36 18 44 8 48 24Z" fill="#e0b341" stroke="#222" stroke-width="2"/>'
+:h=="nemes"?'<path d="M12 30Q12 8 32 8T52 30V50H44V32H20V50H12Z" fill="#3a6fd1" stroke="#222" stroke-width="2"/>'
+:h=="laurel"?'<path d="M12 30Q32 6 52 30" fill="none" stroke="#3d8f3d" stroke-width="5"/>'
+:h=="helmet"?'<path d="M12 32Q12 10 32 10T52 32Z" fill="#9aa3ad" stroke="#222" stroke-width="2"/><rect x="29" y="2" width="6" height="10" fill="#c0392b"/>'
+:h=="hair"?'<path d="M10 34Q8 8 32 8T54 34Q46 18 32 20T10 34Z" fill="#c0392b" stroke="#222" stroke-width="2"/>'
+:h=="tiara"?'<path d="M14 28Q14 10 32 10T50 28Z" fill="#b5651d" stroke="#222" stroke-width="2"/><rect x="14" y="24" width="36" height="4" fill="#e0b341"/>'
+:h=="band"?'<rect x="12" y="20" width="40" height="5" fill="#e0b341"/>':"";
+var mouth=m=="angry"?'<path d="M22 46Q32 38 42 46" fill="#fff" stroke="#222" stroke-width="2"/>':m=="grin"?'<path d="M20 42Q32 56 44 42Z" fill="#7a1f2b" stroke="#222" stroke-width="2"/>':'<path d="M22 44Q32 52 42 44" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>';
+var brow=m=="angry"?'<path d="M17 25 29 31M47 25 35 31" stroke="#222" stroke-width="3"/>':"";
+return '<svg viewBox="0 0 64 64" width="'+z+'" height="'+z+'" aria-hidden="true"><circle cx="32" cy="36" r="22" fill="'+c+'" stroke="#222" stroke-width="2.5"/><circle cx="24" cy="33" r="6" fill="#fff" stroke="#222" stroke-width="2"/><circle cx="40" cy="33" r="6" fill="#fff" stroke="#222" stroke-width="2"/><circle cx="25" cy="34" r="2.5" fill="#222"/><circle cx="41" cy="34" r="2.5" fill="#222"/>'+brow+mouth+hat+'</svg>'}
+
+$("pn").innerHTML=char({hat:"cap",s:50});
+$("cards").innerHTML=KEYS.map(function(k){var c=CIV[k];return '<button class="pk" onclick="begin(\''+k+'\')">'+char({hat:c.hat,s:56,mood:"grin"})+'<span><b>'+c.n+'</b><br><small>'+c.d+'</small></span></button>'}).join("");
+
+function begin(k){
+  var inv={s_wheat:4};
+  S={civ:k,day:1,min:0,gold:20,rep:0,xp:0,inv:inv,plots:[null,null,null,null,null,null],pr:{},fair:{},b:{},king:false,horse:0,cart:0,hp:140,hb:100,str:0,wis:0,goods:0,wd:0,adDay:-99,panel:null,tg:null,vis:[],log:["بدأت رحلتك في "+CIV[k].n+". المس أي مبنى لتمشي إليه."]};
+  ITEMS.forEach(function(x){S.pr[x.id]=x.p});newDay(true);
+  LOC.spec.l=CIV[k].sp;P.x=180;P.y=176;
+  N=[];for(var i=0;i<3;i++)N.push({x:40+Math.random()*280,y:110+Math.random()*150,tx:0,ty:0,c:SK[i+1],h:i==1?"band":""});
+  $("pick").classList.add("hide");$("game").classList.remove("hide");buildMap();render();
+  if(!rafOn){rafOn=true;requestAnimationFrame(loop)}}
+function newDay(first){ITEMS.forEach(function(x){S.fair[x.id]=Math.max(1,Math.round(x.p*(.75+Math.random()*.5)))});S.hb=Math.round(80+Math.random()*50)}
+function lvl(){var n=0;LV.forEach(function(v){if(S.xp>=v)n++});return n}
+function inv(k){return S.inv[k]||0}
+function add(k,n){S.inv[k]=Math.max(0,inv(k)+n)}
+function say(m){S.log.unshift(m);S.log=S.log.slice(0,5)}
+function T(m){if(S.min+m>840){say("الوقت لا يكفي اليوم. عد إلى البيت ونم.");render();return false}S.min+=m;return true}
+function addxp(n){var b=lvl();S.xp+=Math.round(n);var a=lvl();if(a>b)say("ارتقيت إلى «"+CIV[S.civ].ranks[a-1]+"»!");
+  if(a>=5&&!S.king){S.king=true;box('<h2>أنت الملك!</h2><p>ادخل البيت (القصر) لتبني دولتك كما تشاء.</p><button class="main" onclick="closeBox()">ابدأ</button>')}}
+function box(h){$("ovc").innerHTML=h;$("ov").classList.remove("hide")}
+function closeBox(){$("ov").classList.add("hide");render()}
+
+function buildMap(){
+  var c=S.civ,g=c=="greece"?"#9bbd70":c=="phoenicia"?"#c9c39a":"#d9c28a",h='<rect width="360" height="280" fill="'+g+'"/><path d="M0 160H360M180 0V280" stroke="#b98d57" stroke-width="16" opacity=".5"/>';
+  Object.keys(LOC).forEach(function(k){var o=LOC[k],x=o.x,y=o.y,b;
+    if(k=="farm")b='<g stroke="#222" stroke-width="1.5"><rect x="'+(x-36)+'" y="'+(y-26)+'" width="22" height="18" fill="#7bb661"/><rect x="'+(x-11)+'" y="'+(y-26)+'" width="22" height="18" fill="#6aa552"/><rect x="'+(x+14)+'" y="'+(y-26)+'" width="22" height="18" fill="#7bb661"/><rect x="'+(x-36)+'" y="'+(y-6)+'" width="22" height="18" fill="#6aa552"/><rect x="'+(x-11)+'" y="'+(y-6)+'" width="22" height="18" fill="#7bb661"/><rect x="'+(x+14)+'" y="'+(y-6)+'" width="22" height="18" fill="#6aa552"/></g>';
+    else b='<rect x="'+(x-24)+'" y="'+(y-16)+'" width="48" height="30" fill="'+(k=="market"?"#f0d49a":k=="stable"?"#b98a5e":k=="pot"?"#c98f5e":"#e9dcc0")+'" stroke="#222" stroke-width="2"/><path d="M'+(x-29)+' '+(y-16)+'L'+x+' '+(y-36)+'L'+(x+29)+' '+(y-16)+'Z" fill="'+(k=="market"?"#c0392b":k=="seeds"?"#3d8f3d":k=="spec"?"#3a6fd1":"#a0522d")+'" stroke="#222" stroke-width="2"/><rect x="'+(x-5)+'" y="'+(y-2)+'" width="10" height="16" fill="#5a3b1e"/>';
+    h+='<g onclick="go(\''+k+'\',event)" style="cursor:pointer" role="button" aria-label="'+o.l+'">'+b+'<text x="'+x+'" y="'+(y+29)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#16243a" stroke="#fff" stroke-width="3" paint-order="stroke">'+o.l+'</text></g>'});
+  h+='<g id="dyn"></g><rect id="dk" width="360" height="280" fill="#0b1530" opacity="0" pointer-events="none"/>';
+  $("map").innerHTML=h;
+  $("dyn").innerHTML=N.map(function(n,i){return '<g id="n'+i+'">'+char({c:n.c,hat:n.h,s:26})+'</g>'}).join("")+'<g id="hs"></g><g id="ct"></g><g id="me"></g>'}
+function go(k,e){if(e)e.stopPropagation();var o=LOC[k];S.tg={x:o.x,y:Math.min(268,o.y+40),k:k};S.panel=null;drawPanel()}
+function mapTap(e){var r=$("map").getBoundingClientRect();S.tg={x:Math.max(10,Math.min(350,(e.clientX-r.left)/r.width*360)),y:Math.max(100,Math.min(270,(e.clientY-r.top)/r.height*280)),k:null};S.panel=null;drawPanel()}
+
+function loop(t){var dt=Math.min(.05,(t-last)/1000);last=t;
+  if(S&&S.tg){var dx=S.tg.x-P.x,dy=S.tg.y-P.y,d=Math.hypot(dx,dy),st=115*dt;
+    if(d<=st){P.x=S.tg.x;P.y=S.tg.y;var k=S.tg.k;S.tg=null;if(k){S.panel=k;render()}}
+    else{P.x+=dx/d*st;P.y+=dy/d*st;if(Math.abs(dx)>2)P.dir=dx<0?-1:1;P.w+=dt*14;S.min=Math.min(840,S.min+st*(S.horse?.1:.2))}}
+  if(S&&$("me")){
+    N.forEach(function(n,i){var dx=n.tx-n.x,dy=n.ty-n.y,d=Math.hypot(dx,dy);if(d<3){n.tx=30+Math.random()*300;n.ty=110+Math.random()*160}else{n.x+=dx/d*18*dt;n.y+=dy/d*18*dt}
+      $("n"+i).setAttribute("transform","translate("+(n.x-13)+","+(n.y-24)+")")});
+    var bob=S.tg?Math.abs(Math.sin(P.w))*-3:0,fx=P.x-P.dir*30;
+    $("me").setAttribute("transform","translate("+P.x+","+(P.y+bob)+") scale("+P.dir+",1) translate(-22,-40)");
+    $("hs").innerHTML=S.horse?'<g transform="translate('+fx+','+(P.y-6)+') scale('+P.dir+',1)"><ellipse rx="16" ry="9" fill="#8b5a2b" stroke="#222" stroke-width="2"/><rect x="9" y="-18" width="8" height="14" fill="#8b5a2b" stroke="#222" stroke-width="2"/><ellipse cx="19" cy="-19" rx="7" ry="5" fill="#8b5a2b" stroke="#222" stroke-width="2"/><path d="M-10 6v10M-3 6v10M5 6v10M11 6v10" stroke="#222" stroke-width="3"/></g>':"";
+    $("ct").innerHTML=S.cart?'<g transform="translate('+(fx-P.dir*34)+','+(P.y-2)+') scale('+P.dir+',1)"><rect x="-16" y="-14" width="32" height="14" fill="#a9762f" stroke="#222" stroke-width="2"/><circle cx="-9" cy="3" r="6" fill="#d9a441" stroke="#222" stroke-width="2"/><circle cx="9" cy="3" r="6" fill="#d9a441" stroke="#222" stroke-width="2"/></g>':"";
+    var m=S.min,o=0,col="#0b1530";if(m<60){col="#f2a65a";o=.3*(1-m/60)}else if(m>600)o=Math.min(.6,(m-600)/240*.6);
+    $("dk").setAttribute("fill",col);$("dk").setAttribute("opacity",o);
+    $("clock").textContent="اليوم "+S.day+" · "+clockStr()}
+  requestAnimationFrame(loop)}
+function clockStr(){var m=Math.floor(S.min),h=6+Math.floor(m/60),mm=m%60;return (h>12?h-12:h)+":"+(mm<10?"0":"")+mm+(h>=12?" م":" ص")}
+
+function buySeed(id,n){var c=IT[id],p=c.seed*n;if(S.gold<p){say("ذهبك لا يكفي.");return render()}S.gold-=p;add("s_"+id,n);say("اشتريت "+n+" بذرة "+c.n+".");render()}
+function plant(){var id=$("sel").value,c=IT[id],e=[];S.plots.forEach(function(p,i){if(!p)e.push(i)});var k=Math.min(e.length,inv("s_"+id));
+  if(!k){say("لا حقول فارغة أو لا بذور من هذا النوع.");return render()}if(!T(60))return;
+  for(var i=0;i<k;i++)S.plots[e[i]]={c:id,d:S.day};add("s_"+id,-k);say("زرعت "+k+" حقل "+c.n+": ينضج بعد "+c.days+" أيام.");render()}
+function harvest(){var k=0,out=[];S.plots.forEach(function(p,i){if(p&&S.day-p.d>=IT[p.c].days)k++});
+  if(!k){say("لا حقل جاهز بعد.");return render()}if(!T(60))return;
+  S.plots.forEach(function(p,i){if(p&&S.day-p.d>=IT[p.c].days){var c=IT[p.c],y=Math.round(c.y*(.8+Math.random()*.4)*(S.civ=="egypt"?1.25:1));add(c.id,y);out.push(y+" "+c.n);S.plots[i]=null}});
+  addxp(2*k);say("حصدت: "+out.join("، "));render()}
+function market(){var items=ITEMS.filter(function(x){return inv(x.id)>0});if(!items.length){say("لا تملك شيئاً للبيع.");return render()}if(!T(90))return;
+  var n=4+Math.floor(Math.random()*4)+Math.floor(S.rep/15),vis=[],tot=0,ok=0;
+  for(var i=0;i<n;i++){var av=ITEMS.filter(function(x){return inv(x.id)>0});if(!av.length)break;
+    var x=av[Math.floor(Math.random()*av.length)],mx=S.fair[x.id]*(.6+Math.random()*.9),pr=S.pr[x.id];
+    if(pr<=mx){var q=Math.min(inv(x.id),1+Math.floor(Math.random()*3));add(x.id,-q);S.gold+=pr*q;tot+=pr*q;ok++;vis.push({ok:1,t:"اشترى "+q+" "+x.n});if(pr<=S.fair[x.id])S.rep+=.4}
+    else vis.push({ok:0,t:x.n+" غالٍ!"})}
+  S.vis=vis;addxp(tot/4);say("السوق: بعت بـ "+tot+" ذهب لـ "+ok+" من "+vis.length+" زبائن.");render()}
+function buyClay(n){var p=(S.civ=="iraq"?2:3)*n;if(S.gold<p){say("ذهبك لا يكفي.");return render()}S.gold-=p;add("clay",n);say("اشتريت "+n+" طين.");render()}
+function craft(id){var c=IT[id];if(inv("clay")<c.clay){say("تحتاج "+c.clay+" طين.");return render()}if(!T(c.min))return;
+  add("clay",-c.clay);var q=S.civ=="iraq"?2:1;add(id,q);addxp(3);say("صنعت "+q+" "+c.n+".");render()}
+function buyHorse(){if(S.gold<S.hb){say("ذهبك لا يكفي.");return render()}S.gold-=S.hb;S.horse++;say("اشتريت حصاناً بـ "+S.hb+". صرت تمشي أسرع!");render()}
+function buyCart(){if(S.gold<60||S.cart){return render()}S.gold-=60;S.cart=1;say("اشتريت عربة بعجلتين.");render()}
+function sellHorse(){if(!S.horse){say("ما عندك حصان.");return render()}if(!T(60))return;
+  var pr=Math.max(1,+$("hp").value||140),sold=0;S.hp=pr;
+  for(var i=0;i<3;i++){if(S.horse&&pr<=60+Math.random()*110){S.horse--;S.gold+=pr;sold+=pr;addxp(pr/4)}}
+  say(sold?"بعت خيلاً بـ "+sold+" ذهب.":"لا أحد اشترى بهذا السعر. جرّب أقل.");render()}
+function caravan(i){var C=CITIES[i],cap=S.horse?60:25,n=0,tot=0;if(!S.cart){say("تحتاج عربة.");return render()}if(S.min>540){say("القافلة تحتاج 5 ساعات. ابدأ باكراً.");return render()}
+  ITEMS.forEach(function(x){var q=Math.min(inv(x.id),cap-n);if(q>0){add(x.id,-q);n+=q;tot+=Math.round(q*S.fair[x.id]*C.m*(S.civ=="phoenicia"?1.2:1)*(.9+Math.random()*.2))}});
+  if(!n){say("لا بضاعة لتحملها.");return render()}T(300);
+  if(Math.random()<C.r){tot=Math.floor(tot/2);say("قطاع طرق! خسرت نصف الأرباح.")}
+  S.gold+=tot;addxp(4+tot/4);say("قافلة إلى "+C.n+": حملت "+n+" وربحت "+tot+" ذهب.");render()}
+function irrigate(){if(S.gold<5){say("تحتاج 5 ذهب.");return render()}if(!T(30))return;S.gold-=5;S.plots.forEach(function(p){if(p)p.d--});addxp(2);say("حفرت قناة: كل الحقول تنمو أسرع بيوم.");render()}
+function donate(){if(S.gold<10){say("تحتاج 10 ذهب.");return render()}if(!T(30))return;S.gold-=10;S.rep+=3;addxp(3);say("تبرعت للمعبد: +3 سمعة.");render()}
+async function judge(kind,t,ctx){
+  var fb=function(){return{score:Math.max(1,Math.min(7,Math.round(t.split(/\s+/).length/2))),comment:"تقدير مبدئي بحسب وضوح الفكرة وطولها."}};
+  try{var sm=window.claude&&await window.claude.use("sample");if(!sm)return fb();
+    var p=kind=="wisdom"?'أنت حكيم يوناني قديم تقيّم حكمة كتبها لاعب. الحكمة: «'+t+'». قيّمها من 0 إلى 10 بحسب العمق والأصالة والمنطق، ولا تعطِ درجات عالية للكلام العام.':'أنت قائد روماني قديم تقيّم خطة حرب كتبها لاعب. الموقف: '+ctx+' الخطة: «'+t+'». قيّمها من 0 إلى 10 بحسب الذكاء العسكري والواقعية.';
+    var r=await sm.json(p+' أرجع JSON فقط: {"score":رقم,"comment":"تعليق قصير من جملة واحدة بالعربية"}');
+    return{score:Math.max(0,Math.min(10,Math.round(Number(r.score)||0))),comment:String(r.comment||"")}}catch(e){return fb()}}
+function ask(title,sub,cb){box('<h2>'+title+'</h2><p>'+sub+'</p><textarea id="tx" rows="4" maxlength="400"></textarea><button class="main" id="ok">أرسل</button> <button onclick="closeBox()">إلغاء</button>');
+  $("ok").onclick=function(){var t=$("tx").value.trim();if(t.length>=5)cb(t)}}
+function wisdom(){if(S.wd==S.day){say("الحكيم يستقبل حكمة واحدة في اليوم.");return render()}if(S.min+120>840){say("الوقت لا يكفي.");return render()}
+  ask("اكتب حكمتك","اكتب جملة أو جملتين، وسيقيّمها الحكيم.",async function(t){box("<p>الحكيم يتأمل...</p>");var r=await judge("wisdom",t),sc=r.score;S.wd=S.day;S.wis+=sc;S.min+=120;
+    var st=Math.floor(sc/2)+(sc>=7?2:0);S.gold+=st;if(sc>=7)S.rep+=1;addxp(sc*2.5);say("«"+esc(t.slice(0,50))+"» — الحكيم: "+sc+"/10. "+esc(r.comment)+" (+"+st+" ذهب من التلاميذ)");closeBox()})}
+function war(){if(S.wd==S.day){say("فكّرت في الحرب اليوم بالفعل.");return render()}if(S.min+120>840){say("الوقت لا يكفي.");return render()}var c=WAR[Math.floor(Math.random()*WAR.length)];
+  ask("خطة حرب",c,async function(t){box("<p>القائد يدرس خطتك...</p>");var r=await judge("war",t,c),sc=r.score;S.wd=S.day;S.min+=120;addxp(sc*2+S.str);say("خطتك: "+sc+"/10. "+esc(r.comment));closeBox()})}
+function train(){if(!T(60))return;S.str++;addxp(3);say("تدربت: قوتك "+S.str+".");render()}
+function duel(){if(!T(90))return;var p=Math.min(.9,.25+.06*S.str+.02*lvl());if(Math.random()<p){S.gold+=12;addxp(8);say("فزت في الحلبة! +12 ذهب.")}else{addxp(2);say("خسرت المبارزة. تدرّب أكثر.")}render()}
+function buyGoods(){var q=Math.min(5,Math.floor(S.gold/12));if(!q){say("تحتاج 12 ذهباً.");return render()}S.gold-=q*12;S.goods+=q;say("اشتريت "+q+" بضاعة.");render()}
+function sail(i){var P2=[24,30,38][i],n=["ميناء مصر","أثينا","قرطاج"][i];if(S.min>480){say("الإبحار 6 ساعات. ابدأ باكراً.");return render()}if(!S.goods){say("اشترِ بضاعة أولاً.");return render()}
+  T(360);var p=Math.round(P2*(.8+Math.random()*.5)),g=S.goods;if(Math.random()<.15){g=Math.floor(g/2);say("عاصفة! خسرت نصف البضاعة.")}
+  S.gold+=g*p;addxp(4+g);S.goods=0;say("بعت "+g+" في "+n+" بسعر "+p+": +"+g*p+" ذهب.");render()}
+function buyB(k){var b=BUILD.filter(function(x){return x[0]==k})[0];if(S.b[k]||S.gold<b[2])return;S.gold-=b[2];S.b[k]=1;say("بنيت: "+b[1]);render()}
+function sleep(){var home=Math.hypot(P.x-180,P.y-190)<60;if(!home){if(S.gold<5){say("تحتاج 5 ذهب للنوم خارج البيت.");return render()}S.gold-=5}
+  var eat=CROPS.filter(function(c){return inv(c.id)>0})[0];if(eat)add(eat.id,-1);else{S.rep=Math.max(0,S.rep-2);say("نمت جائعاً: خسرت سمعة.")}
+  if(S.b.granary)add("wheat",3);if(S.b.temple)S.rep+=1;if(S.b.port)S.gold+=4;if(S.b.camp)addxp(2);
+  S.day++;S.min=0;S.panel=null;newDay();say("بدأ يوم جديد. أسعار السوق تغيّرت.");render()}
+function ad(){if(S.day-S.adDay<3)return;var l=3;box('<h2>إعلان تجريبي</h2><p>هنا يظهر إعلان قصير في النسخة الحقيقية.</p><p><b id="cd">3</b></p>');
+  var t=setInterval(function(){l--;if(l>0){$("cd").textContent=l;return}clearInterval(t);add("s_wheat",6);S.gold+=10;S.adDay=S.day;say("شكراً للمشاهدة! +6 بذور قمح و+10 ذهب.");closeBox()},1000)}
+
+function tip(){var ready=S.plots.some(function(p){return p&&S.day-p.d>=IT[p.c].days}),seeds=CROPS.some(function(c){return inv("s_"+c.id)>0}),prod=ITEMS.some(function(x){return inv(x.id)>0});
+  if(S.min>=780)return "اقترب الليل! عد إلى البيت وانم.";
+  if(ready)return "حقولك جاهزة! امشِ إلى المزرعة واحصد.";
+  if(!seeds&&S.plots.some(function(p){return !p}))return "ما عندك بذور. امشِ إلى متجر البذور.";
+  if(seeds&&S.plots.some(function(p){return !p}))return "عندك بذور وحقول فارغة. اذهب إلى المزرعة وازرع.";
+  if(prod)return "بِع في السوق. أنت من يحدد السعر! الغالي يفرّ منه الزبائن.";
+  if(!S.cart)return "الإسطبل فيه خيل وعربات. الحصان يسرّعك، والعربة تحمل بضاعة لمدن بعيدة.";
+  return "جرّب قافلة إلى مدينة بعيدة: ربحها أكبر لكن فيها مخاطرة."}
+function row(a,b){return '<div class="rw"><span>'+a+'</span><span class="g">'+b+'</span></div>'}
+function drawPanel(){var p=$("panel"),k=S.panel;p.classList.toggle("hide",!k);if(!k)return;var h="";
+  if(k=="home"){h='<b>البيت</b><p class="lbl">'+(S.king?"أنت الملك. ابنِ دولتك:":"هنا تنام وترتاح. الملك فقط يبني الدولة.")+'</p>';
+    if(S.king)h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+BUILD.map(function(b){return '<button '+(S.b[b[0]]||S.gold<b[2]?"disabled":"")+' onclick="buyB(\''+b[0]+'\')">'+b[1]+(S.b[b[0]]?" ✔":" ("+b[2]+")")+'<br><small>'+b[3]+'</small></button>'}).join("")+'</div>'}
+  if(k=="seeds"){h='<b>متجر البذور</b>'+CROPS.map(function(c){return row(c.e+" "+c.n+' <small>ينضج '+c.days+' أيام · يباع ~'+S.fair[c.id]+'</small>','<small>'+c.seed+' ذهب</small><button onclick="buySeed(\''+c.id+'\',1)">+1</button><button onclick="buySeed(\''+c.id+'\',5)">+5</button>')}).join("")}
+  if(k=="farm"){var o=CROPS.filter(function(c){return inv("s_"+c.id)>0}).map(function(c){return '<option value="'+c.id+'">'+c.e+" "+c.n+" ("+inv("s_"+c.id)+")</option>"}).join("");
+    h='<b>المزرعة</b><div class="pls">'+S.plots.map(function(p){if(!p)return '<div class="pl">فارغ</div>';var c=IT[p.c],l=c.days-(S.day-p.d);return l<=0?'<div class="pl rd">'+c.e+' جاهز</div>':'<div class="pl">'+c.e+' باقي '+l+'</div>'}).join("")+'</div>'+
+    (o?'<div class="row"><select id="sel">'+o+'</select> <button onclick="plant()">ازرع (ساعة)</button></div>':'<p class="lbl">لا بذور. اشترِ من المتجر.</p>')+'<button onclick="harvest()">احصد الجاهز (ساعة)</button>'}
+  if(k=="market"){var it=ITEMS.filter(function(x){return inv(x.id)>0});
+    h='<b>السوق</b> <small>الأسعار تتغير كل يوم</small>'+(it.length?it.map(function(x){return row(x.e+" "+x.n+" ×"+inv(x.id)+' <small>(اليوم ~'+S.fair[x.id]+')</small>','<input type="number" min="1" value="'+S.pr[x.id]+'" onchange="S.pr[\''+x.id+'\']=Math.max(1,+this.value||1)">')}).join("")+'<button class="main" style="width:100%;margin-top:6px" onclick="market()">افتح السوق (ساعة ونصف)</button>':'<p class="lbl">ما عندك شيء تبيعه.</p>')+'<div id="vis">'+S.vis.map(function(v,i){return '<div class="vs">'+char({c:SK[i%4],mood:v.ok?"smile":"angry",hat:i%3==0?"band":"",s:38})+'<br>'+v.t+'</div>'}).join("")+'</div>'}
+  if(k=="pot"){var cp=S.civ=="iraq"?2:3;h='<b>ورشة الفخار</b><p class="lbl">طين: '+inv("clay")+' · جرّة: '+inv("jar")+' · إناء: '+inv("vase")+(S.civ=="iraq"?' · (كل صنعة تعطيك اثنتين)':'')+'</p>'+
+    row("🧱 طين",'<small>'+cp+' ذهب</small><button onclick="buyClay(1)">+1</button><button onclick="buyClay(5)">+5</button>')+POTS.map(function(c){return row(c.e+" "+c.n+' <small>يحتاج '+c.clay+' طين · '+c.min/60+' ساعة · يباع ~'+S.fair[c.id]+'</small>','<button onclick="craft(\''+c.id+'\')">اصنع</button>')}).join("")}
+  if(k=="stable"){h='<b>الإسطبل</b><p class="lbl">خيلك: '+S.horse+' · العربة: '+(S.cart?"نعم":"لا")+' · سعر الحصان اليوم: '+S.hb+'</p>'+
+    row("🐎 حصان (يسرّع مشيك)",'<button onclick="buyHorse()">اشترِ ('+S.hb+')</button>')+row("🛒 عربة بعجلتين",S.cart?'✔':'<button onclick="buyCart()">اشترِ (60)</button>')+
+    (S.horse?row("بيع حصان بسعرك",'<input id="hp" type="number" min="1" value="'+S.hp+'"><button onclick="sellHorse()">اعرض</button>'):"")+
+    (S.cart?'<b>قوافل تجارية</b> <small>(5 ساعات، تحمل '+(S.horse?60:25)+' قطعة)</small>'+CITIES.map(function(c,i){return row(c.n+' <small>سعر ×'+c.m+' · خطر '+Math.round(c.r*100)+'%</small>','<button onclick="caravan('+i+')">انطلق</button>')}).join(""):'<p class="lbl">اشترِ عربة لتبدأ القوافل.</p>')}
+  if(k=="spec"){var c=S.civ;h='<b>'+CIV[c].sp+'</b>';
+    if(c=="egypt")h+=row("قناة ري (5 ذهب، نصف ساعة)",'<button onclick="irrigate()">احفر</button>');
+    if(c=="iraq")h+=row("تبرع للمعبد (10 ذهب)",'<button onclick="donate()">تبرّع</button>');
+    if(c=="greece")h+=row("اكتب حكمتك للحكيم (ساعتان)",'<button onclick="wisdom()">اكتب</button>');
+    if(c=="rome")h+=row("تدرّب (ساعة)",'<button onclick="train()">تدرّب</button>')+row("مبارزة (ساعة ونصف)",'<button onclick="duel()">قاتل</button>')+row("خطة حرب (ساعتان)",'<button onclick="war()">فكّر</button>');
+    if(c=="phoenicia")h+=row("بضاعة (12 ذهب): عندك "+S.goods,'<button onclick="buyGoods()">اشترِ</button>')+[["ميناء مصر",0],["أثينا",1],["قرطاج",2]].map(function(x){return row("أبحر إلى "+x[0]+" (6 ساعات)",'<button onclick="sail('+x[1]+')">أبحر</button>')}).join("")}
+  p.innerHTML=h}
+function render(){var L=lvl(),cv=CIV[S.civ],lo=LV[L-1],hi=LV[L]||LV[4];
+  $("rank").textContent=cv.ranks[L-1];
+  $("stats").innerHTML=[["ذهب",S.gold],["سمعة",Math.floor(S.rep)],["خيل",S.horse],["مستوى",L]].map(function(x){return '<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'}).join("");
+  $("xp").style.width=(L>=5?100:(S.xp-lo)/(hi-lo)*100)+"%";
+  $("nv").innerHTML=char({hat:"cap",s:44});$("nt").textContent=tip();
+  $("me").innerHTML=char({hat:L>=5?"crown":cv.hat,s:44,mood:"grin"});
+  var w=3-(S.day-S.adDay);$("adb").disabled=w>0;$("adb").textContent=w>0?"المكافأة بعد "+w+" أيام":"شاهد إعلاناً قصيراً: +6 بذور قمح و+10 ذهب";
+  $("log").innerHTML=S.log.map(function(x){return "<p>"+x+"</p>"}).join("");
+  drawPanel()}
+</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});</script>
+</body>
+</html>
